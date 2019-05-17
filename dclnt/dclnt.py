@@ -31,7 +31,7 @@ def get_filenames(path):
                 if len(filenames) == TOT_FILES:
                     symptome = 1
                     break
-    print('total %s files' % len(filenames))
+    # print('total %s files' % len(filenames))
     # print('filenames',filenames)
     return filenames
 
@@ -54,7 +54,7 @@ def get_trees(path, with_filenames=False, with_file_content=False):
                 trees.append((filename, tree))
         else:
             trees.append(tree)
-    print('trees generated')
+    # print('trees generated')
     return trees
 
 
@@ -65,6 +65,11 @@ def get_all_names(tree):
 def get_verbs_from_function_name(function_name):
     return [word for word in function_name.split('_') if is_verb(word)]
 
+
+def split_snake_case_name_to_words(name):
+    return [name for name in name.split('_') if name]
+
+
 # @profile
 def get_all_words_in_path(path):
     trees = [tree for tree in get_trees(path) if tree]
@@ -72,9 +77,6 @@ def get_all_words_in_path(path):
     for trees in trees:
         all_names.append(get_all_names(trees))
     function_names = [func for func in flat(all_names) if not (func.startswith('__') and func.endswith('__'))]
-
-    def split_snake_case_name_to_words(name):
-        return [name for name in name.split('_') if name]
     return flat([split_snake_case_name_to_words(function_name) for function_name in function_names])
 
 
@@ -87,6 +89,22 @@ def get_nodes(path):
                 nodes[item].append(node.name.lower())
     return nodes
 
+
+def get_varbls(path):
+    nodes = []
+    for item, tree in enumerate(get_trees(path)):
+        nodes.append([])
+        for node in ast.walk(tree):
+            if type(node).__name__ == 'Assign':
+                for t in node.targets:
+                    if type(t).__name__ == 'Name':
+                        nodes[item].append(t.id)
+            if type(node).__name__ == 'For':
+                if type(node.target).__name__ == 'Name':
+                    nodes[item].append(node.target.id)
+    return nodes
+
+
 # @profile
 def get_top_verbs_in_path(path, top_size=10):
     fncs = [func for func in flat(get_nodes(path)) if not (func.startswith('__') and func.endswith('__'))]
@@ -94,10 +112,16 @@ def get_top_verbs_in_path(path, top_size=10):
     verbs = flat([get_verbs_from_function_name(function_name) for function_name in fncs])
     return collections.Counter(verbs).most_common(top_size)
 
+
 # @profile
-def get_top_functions_names_in_path(path, top_size=10):
+def get_functions_names_in_path(path, top_size=10):
     nms = [func for func in flat(get_nodes(path)) if not (func.startswith('__') and func.endswith('__'))]
-    return collections.Counter(nms).most_common(top_size)
+    return flat([split_snake_case_name_to_words(nms) for nms in nms])
+
+
+def get_varbls_names_in_path(path, top_size=10):
+    nms = [func for func in flat(get_varbls(path))]
+    return flat([split_snake_case_name_to_words(nms) for nms in nms])
 
 
 if __name__ == '__main__':
@@ -126,4 +150,4 @@ if __name__ == '__main__':
     print('total %s words, %s unique' % (len(wds), len(set(wds))))
 
     for word, occurence in collections.Counter(wds).most_common(top_size):
-        print('Total', word, occurence)
+        print(word, occurence)
