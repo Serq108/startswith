@@ -1,0 +1,5 @@
+# Lines starting with '#' are considered comments.
+# Ignore any file named foo.txt.
+foo.txt
+# Ignore (generated) pyc files,
+*.pyc
