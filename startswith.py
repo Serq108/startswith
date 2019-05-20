@@ -110,8 +110,8 @@ def lex_report(Dict_in, outype):
         json.dump(Dict_in,fw)
         fw.close()
     if outype == CSV:
-        L_keys = list(Dict_in.keys()) # список слов
-        L_val = list(Dict_in.values()) # список количества вхождений слов
+        L_keys = list(Dict_in.keys())
+        L_val = list(Dict_in.values())
         fw = csv.writer(open(L_keys[0]+'.csv', "w"))
         fw.writerow([L_keys[0], 'Qantity'])
         for key, val in L_val[0].items():
