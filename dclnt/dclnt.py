@@ -12,11 +12,11 @@ def flat(_list):
     return sum([list(item) for item in _list], [])
 
 
-def is_verb(word):
-    if not word:
-        return False
-    pos_info = pos_tag([word])
-    return pos_info[0][1] == 'VB'
+# ~ def is_verb(word):
+    # ~ if not word:
+        # ~ return False
+    # ~ pos_info = pos_tag([word])
+    # ~ return pos_info[0][1] == 'VB'
 
 
 def get_filenames(path):
@@ -62,8 +62,8 @@ def get_all_names(tree):
     return [node.id for node in ast.walk(tree) if isinstance(node, ast.Name)]
 
 
-def get_verbs_from_function_name(function_name):
-    return [word for word in function_name.split('_') if is_verb(word)]
+# ~ def get_verbs_from_function_name(function_name):
+    # ~ return [word for word in function_name.split('_') if is_verb(word)]
 
 
 def split_snake_case_name_to_words(name):
