@@ -102,7 +102,7 @@ def lex_report(dict_in, outype):
         fw.close()
     if outype == CSV:
         list_keys = list(dict_in.keys())
-        list_val = list(dict_in.valistues())
+        list_val = list(dict_in.values())
         fw = csv.writer(open(list_keys[0]+'.csv', "w"))
         fw.writerow([list_keys[0], 'Qantity'])
         for key, val in list_val[0].items():
