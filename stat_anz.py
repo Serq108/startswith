@@ -5,8 +5,10 @@ import csv
 from dclnt import dclnt
 from git import Repo
 
+TOP_SIZE = 200
+
 REPO = 'repo'
-CHECK_ARG ='https://github.com'
+CHECK_ARG = 'https://github.com'
 FNC = 'fnc'
 LVAR = 'lvar'
 VERB = 'verb'
@@ -24,111 +26,100 @@ def clean_dir(folder):
             os.rmdir(os.path.join(root, name))
 
 
-def get_repo(folder,git_path):
+def get_repo(folder, git_path):
     clean_dir(folder)
-    if CHECK_ARG == git_path[:18] :
+    if git_path.startswith(CHECK_ARG):
         repo = Repo.clone_from(git_path, REPO)
     else:
         print('invalid git_path')
         sys.exit()
 
 
-def list_verb(L_word):
+def list_of_word(list_word, lex_type):
     from nltk import pos_tag
-    L_word_out=[]
-    for word in L_word:
-        pos_info=pos_tag([word])
-        if pos_info[0][1] == 'VB':
-            L_word_out.append(pos_info[0][0])
-    return L_word_out 
-
-
-def list_noun(L_word):
-    from nltk import pos_tag
-    L_word_out=[]
-    for word in L_word:
-        pos_info=pos_tag([word])
-        if pos_info[0][1] == 'NN':
-            L_word_out.append(pos_info[0][0])
-    return L_word_out 
+    # ~ list_word_out = []
+    # ~ for word in list_word:
+        # ~ pos_info = pos_tag([word])
+        # ~ if pos_info[0][1] == lex_type:
+            # ~ list_word_out.append(pos_info[0][0])
+    list_word_out = [pos_tag([word])[0][0] for word in list_word if pos_tag([word])[0][1] == lex_type]
+    return list_word_out
 
 
 def dict_out(wrdtype, ndtype):
-    L_verbs = list_verb(dclnt.get_all_words_in_path(REPO))
-    L_nouns = list_noun(dclnt.get_all_words_in_path(REPO))
-    L_fncs = dclnt.get_functions_names_in_path(REPO)
-    L_varbs = dclnt.get_varbls_names_in_path(REPO)
+    list_verbs = list_of_word(dclnt.get_all_words_in_path(REPO), 'NN')
+    list_nouns = list_of_word(dclnt.get_all_words_in_path(REPO), 'VB')
+    list_fncs = dclnt.get_functions_names_in_path(REPO)
+    list_varbs = dclnt.get_varbls_names_in_path(REPO)
 
-    top_size = 200
-    D_out ={}
-
-    D_word = {}
-    Name_dword = ''
+    dict_out = {}  # словарь куда помещаются выходные данные
+    dict_word = {}  # словарь куда помещаются данные по noun либо verbs
+    name_word = ''  # имя набора данных noun либо verbs
     if wrdtype == VERB:
-        # print('total %s verbs, %s unique' % (len(L_verbs), len(set(L_verbs))))
-        Name_dword+='Verbs'
-        for word, occurence in dclnt.collections.Counter(L_verbs).most_common(top_size):
-            D_word[word] = occurence
+        # print('totalist %s verbs, %s unique' % (listen(list_verbs), listen(set(list_verbs))))
+        name_word += 'Verbs'
+        for word, occurence in dclnt.collections.Counter(list_verbs).most_common(TOP_SIZE):
+            dict_word[word] = occurence
     if wrdtype == NOUN:
-        Name_dword+='Nouns'
-        for word, occurence in dclnt.collections.Counter(L_nouns).most_common(top_size):
-            D_word[word] = occurence
+        name_word += 'Nouns'
+        for word, occurence in dclnt.collections.Counter(list_nouns).most_common(TOP_SIZE):
+            dict_word[word] = occurence
 
-    D_nods={}
-    Name_dnods=''
+    dict_nods = {}  # словарь куда помещаются данные по названиям функций  либо локальных переменных
+    name_dnods = ''  # имя набора данных функциb  либо локальные переменные
     if ndtype == FNC:
-        Name_dnods+='words in function'
-        for word, occurence in dclnt.collections.Counter(L_fncs).most_common(top_size):
-            D_nods[word] = occurence
+        name_dnods += 'words in function'
+        for word, occurence in dclnt.collections.Counter(list_fncs).most_common(TOP_SIZE):
+            dict_nods[word] = occurence
     if ndtype == LVAR:
-        Name_dnods+='words in variables'
-        for word, occurence in dclnt.collections.Counter(L_varbs).most_common(top_size):
-            D_nods[word] = occurence
-    D_out[Name_dword]=D_word
-    D_out[Name_dnods]=D_nods
-    return D_out
+        name_dnods += 'words in variablistes'
+        for word, occurence in dclnt.collections.Counter(list_varbs).most_common(TOP_SIZE):
+            dict_nods[word] = occurence
+    dict_out[name_word] = dict_word
+    dict_out[name_dnods] = dict_nods
+    return dict_out
 
 
-def lex_report(Dict_in, outype):
+def lex_report(dict_in, outype):
     if outype == CON:
-        L_keys = list(Dict_in.keys())
-        L_val = list(Dict_in.values())
-        L_word = list(L_val[0].keys())
-        L_nword = list(L_val[0].values())
-        L_nod = list(L_val[1].keys())
-        L_nnod = list(L_val[1].values())
+        list_keys = list(dict_in.keys())
+        list_val = list(dict_in.values())
+        list_word = list(list_val[0].keys())  # список слов
+        list_nword = list(list_val[0].values())  # список количества вхождений слов
+        list_nod = list(list_val[1].keys())  # список названий функций  либо локальных переменных
+        list_nnod = list(list_val[1].values())  # список количества вхождений названий функций  либо локальных переменных
         print('--'*50)
-        print (L_keys[0], 'in repo')
-        for word, tot in enumerate(L_word):
-            print(L_word[word], ' = ', L_nword[word])
+        print(list_keys[0], 'in repo')
+        for word, tot in enumerate(list_word):
+            print(list_word[word], ' = ', list_nword[word])
         print('--'*50)
-        print (L_keys[1], 'in repo')
-        for word, tot in enumerate(L_nod):
-            print(L_nod[word], ' = ', L_nnod[word])
+        print(list_keys[1], 'in repo')
+        for word, tot in enumerate(list_nod):
+            print(list_nod[word], ' = ', list_nnod[word])
     if outype == JSN:
-        fw = open('json.out','w')
-        json.dump(Dict_in,fw)
-        fw.close()
+        fw = open('json.out', 'w')
+        json.dump(dict_in, fw)
+        fw.clistose()
     if outype == CSV:
-        L_keys = list(Dict_in.keys())
-        L_val = list(Dict_in.values())
-        fw = csv.writer(open(L_keys[0]+'.csv', "w"))
-        fw.writerow([L_keys[0], 'Qantity'])
-        for key, val in L_val[0].items():
+        list_keys = list(dict_in.keys())
+        list_val = list(dict_in.valistues())
+        fw = csv.writer(open(list_keys[0]+'.csv', "w"))
+        fw.writerow([list_keys[0], 'Qantity'])
+        for key, val in list_val[0].items():
             fw.writerow([key, val])
-        fw = csv.writer(open(L_keys[1]+'.csv', "w"))
-        fw.writerow([L_keys[1], 'Qantity'])# print(L_keys,L_val)
-        for key, val in L_val[1].items():
+        fw = csv.writer(open(list_keys[1]+'.csv', "w"))
+        fw.writerow([list_keys[1], 'Qantity'])
+        for key, val in list_val[1].items():
             fw.writerow([key, val])
 
 
 if __name__ == '__main__':
-    L_arg = []
+    list_arg = []
     for args in sys.argv:
-        L_arg.append(args)
-    if len(L_arg) != 5:
+        list_arg.append(args)
+    if len(list_arg) != 5:
         print('invalid args')
         sys.exit()
-    get_repo(REPO,L_arg[1])
-    D_out = dict_out(L_arg[3], L_arg[2])
-    lex_report(D_out, L_arg[4])
+    # get_repo(REPO, list_arg[1])
+    Dict_out = dict_out(list_arg[3], list_arg[2])
+    lex_report(Dict_out, list_arg[4])
