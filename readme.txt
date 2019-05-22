@@ -1,5 +1,5 @@
 1. Скрипт  запускается строкой  следующего вида: 
-python3 stat_anz.py https://github.com/Serq108/startswith.git fnc verb con
+python3 stat_anz.py https://github.com/Serq108/stat_anz.git fnc verb con
 первый аргумент после названия скрипта задает путь к репозиторию, 
 второй определяет отчет по именам  функций fnc либо именам локальных переменных   lvar, 
 третий аргумент принимает значения verb либо noun, определяет отчет по глаголам либо по 
