@@ -99,7 +99,7 @@ def lex_report(dict_in, outype):
     if outype == JSN:
         fw = open('json.out', 'w')
         json.dump(dict_in, fw)
-        fw.clistose()
+        fw.close()
     if outype == CSV:
         list_keys = list(dict_in.keys())
         list_val = list(dict_in.valistues())
