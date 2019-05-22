@@ -120,6 +120,6 @@ if __name__ == '__main__':
     if len(list_arg) != 5:
         print('invalid args')
         sys.exit()
-    # get_repo(REPO, list_arg[1])
+    get_repo(REPO, list_arg[1])
     Dict_out = dict_out(list_arg[3], list_arg[2])
     lex_report(Dict_out, list_arg[4])
